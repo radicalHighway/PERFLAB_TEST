@@ -1,6 +1,6 @@
-# E-Commerce Store
+# PERFLAB_FOR_MENTOR
 
-A modern e-commerce application built with React, TypeScript, Redux Toolkit, and Tailwind CSS.
+A modern e-commerce application built with React, TypeScript, Redux Toolkit, Express, Sequelize, Node.JS.
 
 ## Features
 
@@ -17,8 +17,7 @@ A modern e-commerce application built with React, TypeScript, Redux Toolkit, and
 - TypeScript
 - Redux Toolkit for state management
 - React Router for routing
-- Tailwind CSS for styling
-- JSON Server for mock API
+- EXPRESS + SEQUELIZE Server 
 
 ## Setup
 
@@ -44,26 +43,38 @@ npm start
 cd client
 npm run dev
 ```
-
 The application will be available at http://localhost:5173
 
 ## Project Structure
-
 ```
 client/
-  ├── src/
-  │   ├── components/     # React components
-  │   ├── store/         # Redux store and slices
-  │   ├── types/         # TypeScript types
-  │   ├── App.tsx        # Main application component
-  │   └── main.tsx       # Application entry point
-  └── server/
-      └── db.json        # Mock data
+└── src/
+    ├── app/           # Инициализация приложения (App.tsx, роутинг, провайдеры, глобальные стили)
+    ├── entities/      # Базовые бизнес-сущности (например: user, product, cart), минимальная логика, типы, слайсы
+    ├── features/      # Фичи — законченное поведение (например: фильтрация, добавление в корзину)
+    ├── pages/         # Страницы, собирающие фичи/виджеты (например: HomePage, ProductPage)
+    ├── widgets/       # Готовые UI-блоки/контейнеры с логикой (например: Header, CartSidebar)
+    ├── shared/        # Переиспользуемые компоненты, хуки, типы, стили и т.д.
+    ├── utils/         # Вспомогательные функции (например: formatPrice, parseQuery)
 ```
 
-## Development
+```
+server/
+└── src/
+    ├── config/        # Конфигурации приложения (настройки базы, порты, переменные окружения и т.п.)
+    ├── db/            # Работа с базой данных: модели, инициализация (или mock-файлы, если без настоящей БД)
+    ├── middleware/    # Пользовательские middleware (логирование, обработка ошибок, auth и т.п.)
+    ├── public/        # Статические файлы, которые Express отдаёт напрямую (например, изображения, фронт билд)
+    ├── routes/        # Определение маршрутов (например, product.routes.js, cart.routes.js)
+    ├── controllers/   # Обработка логики запросов — "мост" между route и service
+    ├── services/      # Бизнес-логика, работа с БД и данными
+    └── utils/         # Утилиты и вспомогательные функции (валидация, генераторы ID и т.д.)
+```
+## Example flow
+[Client] → [Route] → [Controller] → [Service] → [DB/Utils] → [Ответ клиенту]
 
-- The mock server runs on port 3001
+## Development
+- The mock server runs on port 3000
 - The development server runs on port 5173
 - Filter state is persisted in URL query parameters
 - Components are memoized to prevent unnecessary re-renders

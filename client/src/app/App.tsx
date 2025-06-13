@@ -1,14 +1,11 @@
+import type React from "react"
+import { HomePage } from "../pages/HomePage"
 
-
-
-
-function App() {
-  
+export function App () : React.JSX.Element{
   return (
-    <div>
-      <h1>Hello world</h1>
-    </div>
+    <>
+      <h1>App</h1>
+      <HomePage />
+    </>
   )
 }
-
-export default App
