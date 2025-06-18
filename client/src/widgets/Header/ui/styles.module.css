@@ -2,6 +2,9 @@
   background-color: #fff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 1rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .nav {
@@ -13,25 +16,53 @@
 }
 
 .logo {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #333;
-  text-decoration: none;
-}
-
-.categories {
   display: flex;
-  gap: 2rem;
+  align-items: center;
 }
 
-.categories a {
-  color: #666;
+.logoText {
+  font-size: 1.7rem;
+  font-weight: bold;
+  color: #007bff;
   text-decoration: none;
-  font-weight: 500;
+  letter-spacing: 1px;
   transition: color 0.2s;
 }
+.logoText:hover {
+  color: #0056b3;
+}
 
-.categories a:hover,
-.categories a.active {
+.menu {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.link {
+  color: #333;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1.1rem;
+  transition: color 0.2s;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+.link:hover {
   color: #007bff;
+  background: #f0f8ff;
+}
+
+.active {
+  color: #fff;
+  background: #007bff;
+  border-radius: 4px;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  text-decoration: none;
+}
+
+.cartContainer {
+  margin-left: 1.5rem;
+  display: flex;
+  align-items: center;
 }
