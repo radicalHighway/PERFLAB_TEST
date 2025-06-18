@@ -1,11 +1,13 @@
-import type React from "react"
-import { HomePage } from "../pages/HomePage"
+import React from 'react';
+import { Provider } from 'react-redux';
+import { Router } from './router/Router';
+import  store  from './store/store';
 
-export function App () : React.JSX.Element{
+
+export function App(): React.JSX.Element {
   return (
-    <>
-      <h1>App</h1>
-      <HomePage />
-    </>
-  )
+    <Provider store={store}>
+      <Router />
+    </Provider>
+  );
 }

@@ -1,4 +1,3 @@
-// src/entities/user/api/userThunkApi.ts
 import { PRODUCTS_API_ROUTES } from '@/shared/enums/productApiRoutes';
 import { PRODUCTS_THUNKS_TYPES } from '@/shared/enums/productThunkTypes';
 import { axiosInstance } from '@/shared/lib/axiosInstance';
@@ -28,7 +27,7 @@ export const getProducts = createAsyncThunk<
   }
 });
 
-// Получение задачи по id
+// Получение продукта по id
 export const getProductById = createAsyncThunk<
   IApiResponseSuccess<IProduct>,
   number,
@@ -99,6 +98,25 @@ export const updateProductById = createAsyncThunk<
         `${PRODUCTS_API_ROUTES.PRODUCTS}/${id}`,
         productData
       );
+      return data;
+    } catch (error) {
+      const err = error as AxiosError<IApiResponseReject>;
+      return rejectWithValue(err.response!.data);
+    }
+  }
+);
+// Получение продуктов по категории
+export const getProductsByCategory = createAsyncThunk<
+  IApiResponseSuccess<ArrayProductsType>,
+  string,
+  { rejectValue: IApiResponseReject }
+>(
+  PRODUCTS_THUNKS_TYPES.GET_PRODUCTS_BY_CATEGORY,
+  async (category, { rejectWithValue }) => {
+    try {
+      const { data } = await axiosInstance.get<
+        IApiResponseSuccess<ArrayProductsType>
+      >(`${PRODUCTS_API_ROUTES.PRODUCTS}/${category}`);
       return data;
     } catch (error) {
       const err = error as AxiosError<IApiResponseReject>;

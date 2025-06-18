@@ -1,2 +1,2 @@
-export type {CartItem} from './model/types';
-export {cartReducer} from './slice/cartSlice'
+export type { CartItem } from './model/types';
+export { addToCart, clearCart, removeFromCart, updateQuantity, cartReducer } from './slice/cartSlice';

@@ -1,14 +1,17 @@
-import { configureStore } from "@reduxjs/toolkit";
-import { loadCartFromStorage, saveCartToStorage } from "@/shared/utils/localStorage";
-import {cartReducer} from "@/entities/cart";
-import { productReducer  } from "@/entities/product";
+import { cartReducer } from '@/entities/cart';
+import { productReducer } from '@/entities/product';
+import {
+  loadCartFromStorage,
+  saveCartToStorage,
+} from '@/shared/utils/localStorage';
+import { configureStore } from '@reduxjs/toolkit';
 const preloadedCartState = loadCartFromStorage();
 const store = configureStore({
-    reducer: {
-        product: productReducer,
-         cart: cartReducer,
-    },
-    preloadedState: {
+  reducer: {
+    product: productReducer,
+    cart: cartReducer,
+  },
+  preloadedState: {
     cart: preloadedCartState ? preloadedCartState : undefined,
   },
 });
