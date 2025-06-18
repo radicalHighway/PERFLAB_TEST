@@ -1,12 +1,12 @@
 const router = require('express').Router();
-const ProductController = require("../controllers/Product.controller")
-
+const ProductController = require('../controllers/Product.controller');
 
 router
   .get('/', ProductController.getAllProducts)
-  .get ('/:id', ProductController.getProductById)
-  .post('/',ProductController.createProduct)
+  .post('/', ProductController.createProduct)
+  .get('/:category', ProductController.getProductsByCategory)
+  .get('/:id', ProductController.getProductById)
   .put('/:id', ProductController.updateProduct)
-  .delete('/:id', ProductController.deleteProduct)
+  .delete('/:id', ProductController.deleteProduct);
 
-  module.exports = router
+module.exports = router;

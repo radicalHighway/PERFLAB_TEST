@@ -1,7 +1,11 @@
+import styles from './Footer.module.css';
+
 export function Footer(): React.JSX.Element {
-    return (
-        <div>
-            <h1>{new Date().getFullYear()}</h1>
-        </div>
-    )
+  return (
+    <footer className={styles.footer}>
+      <span className={styles.text}>
+        &copy; {new Date().getFullYear()} Магазин продуктов. Все права защищены.
+      </span>
+    </footer>
+  );
 }

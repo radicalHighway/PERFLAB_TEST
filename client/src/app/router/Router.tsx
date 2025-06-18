@@ -11,10 +11,6 @@ export function Router(): React.JSX.Element {
         <Route path={CLIENT_ROUTES.HOME} element={<Layout />}>
           <Route path={CLIENT_ROUTES.HOME} element={<HomePage />} />
           <Route path={CLIENT_ROUTES.PRODUCTS} element={<ProductsPage />} />
-          <Route
-            path={`${CLIENT_ROUTES.PRODUCTS}/:category`}
-            element={<ProductsPage />}
-          />
         </Route>
       </Routes>
     </BrowserRouter>

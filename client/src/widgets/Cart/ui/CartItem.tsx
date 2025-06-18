@@ -3,11 +3,20 @@ import {
   removeFromCart,
   updateQuantity,
 } from '@/entities/cart/slice/cartSlice';
+import type { IProduct } from '@/entities/product';
 import { memo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styles from './styles.module.css';
 
-const CartItem = memo(({ item, onRemove, onQuantityChange }: any) => {
+type CartItemType = IProduct & { quantity: number };
+
+interface CartItemProps {
+  item: CartItemType;
+  onRemove: (id: number) => void;
+  onQuantityChange: (id: number, quantity: number) => void;
+}
+
+const CartItem = memo(({ item, onRemove, onQuantityChange }: CartItemProps) => {
   return (
     <div className={styles.cartItem}>
       <h3>{item.title}</h3>

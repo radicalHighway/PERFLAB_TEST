@@ -1,3 +1,4 @@
+import imgProd from '@/assets/img_prod.jpg';
 import { addToCart } from '@/entities/cart/slice/cartSlice';
 import {
   getProducts,
@@ -5,44 +6,40 @@ import {
 } from '@/entities/product/api/productThunkApi';
 import { useAppDispatch, useAppSelector } from '@/shared/hooks';
 import { useEffect, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router';
+import { useSearchParams } from 'react-router';
 import styles from './styles.module.css';
 
 const ITEMS_PER_PAGE = 6;
-const CATEGORIES = ['All', 'Food', 'Clothes', 'Electronics'];
+const CATEGORIES = ['all', 'food', 'clothes', 'electronics'];
 
 export const ProductsPage = () => {
-  const { category } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const dispatch = useAppDispatch();
   const { products, isLoading, error } = useAppSelector(state => state.product);
 
   // Debug logging
-  console.log('ProductsPage state:', { products, isLoading, error, category });
+  console.log('ProductsPage state:', { products, isLoading, error });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState<'title' | 'price'>('title');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
-    if (category) {
-      console.log('Dispatching getProductsByCategory with category:', category);
-      dispatch(getProductsByCategory(category));
-      setSelectedCategory(category.charAt(0).toUpperCase() + category.slice(1));
+    const filterCategory = searchParams.get('category');
+    console.log('Dispatching category:', filterCategory);
+    if (filterCategory && filterCategory.toLowerCase() !== 'all') {
+      dispatch(getProductsByCategory(filterCategory));
     } else {
-      console.log('Dispatching getProducts for all categories');
       dispatch(getProducts());
     }
-  }, [category, dispatch]);
+  }, [searchParams, dispatch]);
 
   useEffect(() => {
     const page = searchParams.get('page');
     const sort = searchParams.get('sort');
     const order = searchParams.get('order');
     const filterCategory = searchParams.get('category');
-
-    console.log('URL params changed:', { page, sort, order, filterCategory });
 
     if (page) setCurrentPage(Number(page));
     if (sort) setSortBy(sort as 'title' | 'price');
@@ -51,12 +48,10 @@ export const ProductsPage = () => {
   }, [searchParams]);
 
   const handleCategoryChange = (category: string) => {
-    console.log('Category changed to:', category);
-    setSelectedCategory(category);
     setCurrentPage(1);
     setSearchParams({
       page: '1',
-      category,
+      category: category.toLowerCase(),
       sort: sortBy,
       order: sortOrder,
     });
@@ -93,10 +88,11 @@ export const ProductsPage = () => {
   };
 
   const filteredProducts =
-    selectedCategory === 'All'
+    selectedCategory.toLowerCase() === 'all'
       ? products
       : products.filter(
-          product => product.category === selectedCategory.toLowerCase()
+          product =>
+            product.category.toLowerCase() === selectedCategory.toLowerCase()
         );
 
   const sortedItems = [...filteredProducts].sort((a, b) => {
@@ -178,9 +174,8 @@ export const ProductsPage = () => {
       <div className={styles.products}>
         <div className={styles.header}>
           <h1>
-            {category
-              ? category.charAt(0).toUpperCase() + category.slice(1)
-              : 'All Products'}
+            {selectedCategory.charAt(0).toUpperCase() +
+              selectedCategory.slice(1)}
           </h1>
           <div className={styles.filters}>
             <div className={styles.categories}>
@@ -230,7 +225,7 @@ export const ProductsPage = () => {
                 <div key={item.id} className={styles.productCard}>
                   <div className={styles.imageContainer}>
                     <img
-                      src={`https://picsum.photos/300/200?random=${item.id}`}
+                      src={imgProd}
                       alt={item.title}
                       className={styles.productImage}
                     />
