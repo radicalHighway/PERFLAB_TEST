@@ -4,7 +4,7 @@ import {
   updateQuantity,
 } from '@/entities/cart/slice/cartSlice';
 import type { IProduct } from '@/entities/product';
-import { memo, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styles from './styles.module.css';
 
@@ -15,6 +15,17 @@ interface CartItemProps {
   onRemove: (id: number) => void;
   onQuantityChange: (id: number, quantity: number) => void;
 }
+
+const areEqual = (prev: CartItemProps, next: CartItemProps) => {
+  return (
+    prev.item.id === next.item.id &&
+    prev.item.title === next.item.title &&
+    prev.item.price === next.item.price &&
+    prev.item.quantity === next.item.quantity &&
+    prev.onRemove === next.onRemove &&
+    prev.onQuantityChange === next.onQuantityChange
+  );
+};
 
 const CartItem = memo(({ item, onRemove, onQuantityChange }: CartItemProps) => {
   return (
@@ -36,39 +47,61 @@ const CartItem = memo(({ item, onRemove, onQuantityChange }: CartItemProps) => {
       <button onClick={() => onRemove(item.id)}>Remove</button>
     </div>
   );
-});
+}, areEqual);
 
 export const Cart = () => {
   const dispatch = useDispatch();
   const cartItems = useSelector((state: RootState) => state.cart.items);
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleRemove = (id: number) => {
-    dispatch(removeFromCart(id));
-  };
-
-  const handleQuantityChange = (id: number, quantity: number) => {
-    if (quantity === 0) {
-      handleRemove(id);
-    } else {
-      dispatch(updateQuantity({ id, quantity }));
-    }
-  };
-
-  const total = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
+  const handleRemove = useCallback(
+    (id: number) => {
+      dispatch(removeFromCart(id));
+    },
+    [dispatch]
   );
 
-  const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const handleQuantityChange = useCallback(
+    (id: number, quantity: number) => {
+      if (quantity === 0) {
+        dispatch(removeFromCart(id));
+      } else {
+        dispatch(updateQuantity({ id, quantity }));
+      }
+    },
+    [dispatch]
+  );
 
-  const toggleCart = () => {
-    setIsOpen(!isOpen);
-  };
+  const total = useMemo(
+    () => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    [cartItems]
+  );
 
-  const closeCart = () => {
+  const itemCount = useMemo(
+    () => cartItems.reduce((sum, item) => sum + item.quantity, 0),
+    [cartItems]
+  );
+
+  const toggleCart = useCallback(() => {
+    setIsOpen(prev => !prev);
+  }, []);
+
+  const closeCart = useCallback(() => {
     setIsOpen(false);
-  };
+  }, []);
+
+  const renderedItems = useMemo(
+    () =>
+      cartItems.map(item => (
+        <CartItem
+          key={item.id}
+          item={item}
+          onRemove={handleRemove}
+          onQuantityChange={handleQuantityChange}
+        />
+      )),
+    [cartItems, handleRemove, handleQuantityChange]
+  );
 
   return (
     <>
@@ -105,14 +138,7 @@ export const Cart = () => {
             <p className={styles.emptyCart}>Your cart is empty</p>
           ) : (
             <>
-              {cartItems.map(item => (
-                <CartItem
-                  key={item.id}
-                  item={item}
-                  onRemove={handleRemove}
-                  onQuantityChange={handleQuantityChange}
-                />
-              ))}
+              {renderedItems}
               <div className={styles.total}>
                 <h3>Total: ${total.toFixed(2)}</h3>
                 <button className={styles.checkoutButton}>Checkout</button>

@@ -45,25 +45,25 @@
 .price {
   font-size: 1.25rem;
   font-weight: bold;
-  color: #007bff !important;
-  margin-bottom: 1rem !important;
+  color: #007bff ;
+  margin-bottom: 1rem;
 }
 
 .productCard button {
-  width: 100% !important;
-  padding: 0.75rem !important;
-  background: #28a745 !important;
-  color: white !important;
-  border: none !important;
-  border-radius: 4px !important;
-  cursor: pointer !important;
-  transition: background 0.2s !important;
-  font-weight: 500 !important;
-  font-size: 1rem !important;
+  width: 100% ;
+  padding: 0.75rem ;
+  background: #28a745 ;
+  color: white ;
+  border: none ;
+  border-radius: 4px ;
+  cursor: pointer ;
+  transition: background 0.2s ;
+  font-weight: 500 ;
+  font-size: 1rem ;
 }
 
 .productCard button:hover {
-  background: #218838 !important;
+  background: #218838 ;
 }
 
 .sorting {

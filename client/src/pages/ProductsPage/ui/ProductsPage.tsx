@@ -1,156 +1,103 @@
 import imgProd from '@/assets/img_prod.jpg';
 import { addToCart } from '@/entities/cart/slice/cartSlice';
-import {
-  getProducts,
-  getProductsByCategory,
-} from '@/entities/product/api/productThunkApi';
-import { useAppDispatch, useAppSelector } from '@/shared/hooks';
-import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { CATEGORIES_MAP } from '@/shared/enums/categoriesMap';
+import {  SORT_FIELDS, type TSortType } from '@/shared/enums/sortFields';
+import { SORT_ORDER } from '@/shared/enums/sortOrder';
+import { useAppDispatch, useAppSelector, usePagination, useProductsFilter } from '@/shared/hooks';
 import styles from './styles.module.css';
+import { capitalize } from "@/shared/utils"
+import { useMemo } from "react"
 
 const ITEMS_PER_PAGE = 6;
-const CATEGORIES = ['all', 'food', 'clothes', 'electronics'];
 
 export const ProductsPage = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
   const dispatch = useAppDispatch();
   const { products, isLoading, error } = useAppSelector(state => state.product);
 
-  // Debug logging
-  console.log('ProductsPage state:', { products, isLoading, error });
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [sortBy, setSortBy] = useState<'title' | 'price'>('title');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const {
+  selectedCategory,
+  setSelectedCategory,
+  sortBy,
+  sortOrder,
+  setSortBy,
+  setSortOrder,
+  updateSearchParams,
+} = useProductsFilter();
 
-  useEffect(() => {
-    const filterCategory = searchParams.get('category');
-    console.log('Dispatching category:', filterCategory);
-    if (filterCategory && filterCategory.toLowerCase() !== 'all') {
-      dispatch(getProductsByCategory(filterCategory));
-    } else {
-      dispatch(getProducts());
-    }
-  }, [searchParams, dispatch]);
+const {
+  currentPage,
+  setCurrentPage,
+  getPageItems,
+  totalPages,
+} = usePagination(1, ITEMS_PER_PAGE);
 
-  useEffect(() => {
-    const page = searchParams.get('page');
-    const sort = searchParams.get('sort');
-    const order = searchParams.get('order');
-    const filterCategory = searchParams.get('category');
+const handleCategoryChange = (category: CATEGORIES_MAP) => {
+  setCurrentPage(1);
+  setSelectedCategory(category);
+  updateSearchParams({
+    page: '1',
+    category,
+    sort: sortBy,
+    order: sortOrder,
+  });
+};
 
-    if (page) setCurrentPage(Number(page));
-    if (sort) setSortBy(sort as 'title' | 'price');
-    if (order) setSortOrder(order as 'asc' | 'desc');
-    if (filterCategory) setSelectedCategory(filterCategory);
-  }, [searchParams]);
+const handleSort = (field: TSortType) => {
+  const newOrder =
+    field === sortBy && sortOrder === SORT_ORDER.ASC
+      ? SORT_ORDER.DESC
+      : SORT_ORDER.ASC;
 
-  const handleCategoryChange = (category: string) => {
-    setCurrentPage(1);
-    setSearchParams({
-      page: '1',
-      category: category.toLowerCase(),
-      sort: sortBy,
-      order: sortOrder,
-    });
-  };
+  setSortBy(field);
+  setSortOrder(newOrder);
 
-  const handleSort = (field: 'title' | 'price') => {
-    console.log('handleSort called with field:', field);
-    console.log('Current sortBy:', sortBy, 'sortOrder:', sortOrder);
+  updateSearchParams({
+    page: '1',
+    sort: field,
+    order: newOrder,
+    category: selectedCategory,
+  });
+};
 
-    const newOrder = field === sortBy && sortOrder === 'asc' ? 'desc' : 'asc';
-    console.log('New order will be:', newOrder);
+const handlePageChange = (page: number) => {
+  setCurrentPage(page);
+  updateSearchParams({
+    page: page.toString(),
+    sort: sortBy,
+    order: sortOrder,
+    category: selectedCategory,
+  });
+};
 
-    setSortBy(field);
-    setSortOrder(newOrder);
+const filteredProducts = useMemo(() =>
+  selectedCategory === CATEGORIES_MAP.ALL
+    ? products
+    : products.filter(product => product.category === selectedCategory),
+  [products, selectedCategory]
+);
 
-    const newParams = {
-      page: '1',
-      sort: field,
-      order: newOrder,
-      category: selectedCategory,
-    };
-    console.log('Setting search params:', newParams);
-    setSearchParams(newParams);
-  };
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    setSearchParams({
-      page: page.toString(),
-      sort: sortBy,
-      order: sortOrder,
-      category: selectedCategory,
-    });
-  };
-
-  const filteredProducts =
-    selectedCategory.toLowerCase() === 'all'
-      ? products
-      : products.filter(
-          product =>
-            product.category.toLowerCase() === selectedCategory.toLowerCase()
-        );
-
-  const sortedItems = [...filteredProducts].sort((a, b) => {
-    // Validate that we have the required properties
+  const sortedItems = useMemo(() => {
+  return [...filteredProducts].sort((a, b) => {
     if (
       !a.title ||
       !b.title ||
       typeof a.price !== 'number' ||
       typeof b.price !== 'number'
-    ) {
-      console.error('Invalid product data:', { a, b });
-      return 0;
+    ) return 0;
+
+    if (sortBy === SORT_FIELDS.TITLE) {
+      return sortOrder === SORT_ORDER.ASC
+        ? a.title.localeCompare(b.title)
+        : b.title.localeCompare(a.title);
     }
 
-    console.log('Sorting items:', {
-      sortBy,
-      sortOrder,
-      aTitle: a.title,
-      bTitle: b.title,
-      aPrice: a.price,
-      bPrice: b.price,
-    });
-
-    if (sortBy === 'title') {
-      const result =
-        sortOrder === 'asc'
-          ? a.title.localeCompare(b.title)
-          : b.title.localeCompare(a.title);
-      console.log('Title sort result:', result);
-      return result;
-    }
-
-    const result = sortOrder === 'asc' ? a.price - b.price : b.price - a.price;
-    console.log('Price sort result:', result);
-    return result;
+    return sortOrder ===SORT_ORDER.ASC ? a.price - b.price : b.price - a.price;
   });
+}, [filteredProducts, sortBy, sortOrder]);
 
-  const totalPages = Math.ceil(sortedItems.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedItems = sortedItems.slice(
-    startIndex,
-    startIndex + ITEMS_PER_PAGE
-  );
-
-  console.log('Processed data:', {
-    productsLength: products.length,
-    filteredProductsLength: filteredProducts.length,
-    sortedItemsLength: sortedItems.length,
-    paginatedItemsLength: paginatedItems.length,
-    totalPages,
-    currentPage,
-    sortBy,
-    sortOrder,
-    selectedCategory,
-    firstFewProducts: products
-      .slice(0, 3)
-      .map(p => ({ title: p.title, price: p.price, category: p.category })),
-  });
+const paginatedItems = getPageItems(sortedItems);
+const totalPagesCount = totalPages(sortedItems); 
 
   if (isLoading) {
     return (
@@ -174,38 +121,37 @@ export const ProductsPage = () => {
       <div className={styles.products}>
         <div className={styles.header}>
           <h1>
-            {selectedCategory.charAt(0).toUpperCase() +
-              selectedCategory.slice(1)}
+            {capitalize(selectedCategory)}
           </h1>
           <div className={styles.filters}>
             <div className={styles.categories}>
-              {CATEGORIES.map(cat => (
+              {Object.values(CATEGORIES_MAP).map(cat => (
                 <button
                   key={cat}
                   className={selectedCategory === cat ? styles.active : ''}
-                  onClick={() => handleCategoryChange(cat)}>
+                  onClick={() => handleCategoryChange(cat as CATEGORIES_MAP)}>
                   {cat}
                 </button>
               ))}
             </div>
             <div className={styles.sorting}>
               <button
-                className={sortBy === 'title' ? styles.active : ''}
+                className={sortBy === SORT_FIELDS.TITLE ? styles.active : ''}
                 onClick={() => {
                   console.log('Title sort button clicked!');
-                  handleSort('title');
+                  handleSort(SORT_FIELDS.TITLE);
                 }}>
                 Sort by Name{' '}
-                {sortBy === 'title' && (sortOrder === 'asc' ? '↑' : '↓')}
+                {sortBy === SORT_FIELDS.TITLE && (sortOrder === SORT_ORDER.ASC ? '↑' : '↓')}
               </button>
               <button
-                className={sortBy === 'price' ? styles.active : ''}
+                className={sortBy === SORT_FIELDS.PRICE ? styles.active : ''}
                 onClick={() => {
                   console.log('Price sort button clicked!');
-                  handleSort('price');
+                  handleSort(SORT_FIELDS.PRICE);
                 }}>
                 Sort by Price{' '}
-                {sortBy === 'price' && (sortOrder === 'asc' ? '↑' : '↓')}
+                {sortBy === SORT_FIELDS.PRICE && (sortOrder === SORT_ORDER.ASC ? '↑' : '↓')}
               </button>
             </div>
           </div>
@@ -240,9 +186,9 @@ export const ProductsPage = () => {
               ))}
             </div>
 
-            {totalPages > 1 && (
+            {totalPagesCount > 1 && (
               <div className={styles.pagination}>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                {Array.from({ length: totalPagesCount }, (_, i) => i + 1).map(
                   page => (
                     <button
                       key={page}
